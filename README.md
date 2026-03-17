@@ -1,5 +1,7 @@
 # terse-py
 
+[![CI](https://github.com/RudsonCarvalho/terse-py/actions/workflows/ci.yml/badge.svg)](https://github.com/RudsonCarvalho/terse-py/actions/workflows/ci.yml)
+
 Python implementation of the [TERSE](https://github.com/RudsonCarvalho/terse-format) format.
 
 **TERSE** (Token-Efficient Recursive Serialization Encoding) is a compact, LLM-native alternative to JSON with **30–55% fewer tokens**.
