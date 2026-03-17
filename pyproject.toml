@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "terse-py"
+version = "0.1.0"
+description = "Token-Efficient Recursive Serialization Encoding – Python implementation"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+keywords = ["terse", "serialization", "llm", "json", "token-efficient"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "pytest-cov"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
