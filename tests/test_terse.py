@@ -108,7 +108,7 @@ class TestArrays:
     def test_block(self):
         assert parse("[\n  1\n  hello\n  T\n  ~\n]") == [1, "hello", True, None]
     def test_serialize_empty(self): assert serialize([]) == "[]"
-    def test_serialize_inline(self):assert serialize([1, 2, 3]) == "[1 2 3 ]"
+    def test_serialize_inline(self):assert serialize([1, 2, 3]) == "[1 2 3]"
 
     @pytest.mark.parametrize("arr", [
         [], [1, 2, 3], [True, False, None], ["hello", "world"],
@@ -166,7 +166,7 @@ class TestSchemaArrays:
     def test_serialize_uses_schema_for_2plus(self):
         arr = [{"a": 1, "b": 2}, {"a": 3, "b": 4}]
         s = serialize(arr)
-        assert "#[a b ]" in s
+        assert "#[a b]" in s
         assert parse(s) == arr
 
     def test_serialize_nulls_in_schema(self):

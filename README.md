@@ -23,14 +23,14 @@ serialize(True)                   # "T"
 serialize(42)                     # "42"
 serialize("hello")                # "hello"
 serialize("T")                    # '"T"'  (quoted — literal T)
-serialize({"a": 1, "b": "hi"})   # "{a:1 b:hi }"
+serialize({"a": 1, "b": "hi"})   # "{a:1 b:hi}"
 
 # Uniform list of dicts → schema array (token-efficient)
 serialize([
     {"id": 1, "name": "Alice", "active": True},
     {"id": 2, "name": "Bob",   "active": False},
 ])
-# "#[id name active ]\n  1 Alice T \n  2 Bob F "
+# "#[id name active]\n  1 Alice T\n  2 Bob F"
 
 # Parse values
 parse("~")                    # None

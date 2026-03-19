@@ -137,7 +137,7 @@ def _try_inline(val: Any, depth: int = 0) -> str | None:
         parts = [_try_inline(v, depth + 1) for v in val]
         if any(p is None for p in parts):
             return None
-        return "[" + " ".join(parts) + " ]"  # type: ignore[arg-type]
+        return "[" + " ".join(parts) + "]"  # type: ignore[arg-type]
     if isinstance(val, dict):
         if not val:
             return "{}"
@@ -147,7 +147,7 @@ def _try_inline(val: Any, depth: int = 0) -> str | None:
             if vi is None:
                 return None
             parts.append(f"{_serialize_key(k)}:{vi}")
-        return "{" + " ".join(parts) + " }"
+        return "{" + " ".join(parts) + "}"
     return None
 
 
@@ -197,11 +197,11 @@ def serialize(val: Any, _depth: int = 0) -> str:
 
 def _serialize_schema_array(arr: list, keys: list[str], depth: int) -> str:
     ind = "  " * (depth + 1)
-    header = "#[" + " ".join(_serialize_key(k) for k in keys) + " ]"
+    header = "#[" + " ".join(_serialize_key(k) for k in keys) + "]"
     rows = []
     for obj in arr:
         vals = [_serialize_primitive(obj[k]) for k in keys]
-        rows.append(f"{ind}" + " ".join(vals) + " ")
+        rows.append(f"{ind}" + " ".join(vals))
     return header + "\n" + "\n".join(rows)
 
 
