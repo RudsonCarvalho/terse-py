@@ -1,5 +1,5 @@
 """
-TERSE v0.5 – parser and serializer.
+TERSE v0.7 – parser and serializer.
 
 Public API
 ----------
