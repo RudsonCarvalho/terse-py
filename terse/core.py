@@ -137,7 +137,7 @@ def _try_inline(val: Any, depth: int = 0) -> str | None:
         parts = [_try_inline(v, depth + 1) for v in val]
         if any(p is None for p in parts):
             return None
-        return "[" + " ".join(parts) + "]"  # type: ignore[arg-type]
+        return "[" + " ".join(parts) + " ]"  # type: ignore[arg-type]
     if isinstance(val, dict):
         if not val:
             return "{}"
@@ -147,7 +147,7 @@ def _try_inline(val: Any, depth: int = 0) -> str | None:
             if vi is None:
                 return None
             parts.append(f"{_serialize_key(k)}:{vi}")
-        return "{" + " ".join(parts) + "}"
+        return "{" + " ".join(parts) + " }"
     return None
 
 
@@ -188,7 +188,7 @@ def serialize(val: Any, _depth: int = 0) -> str:
         if inline is not None and len(inline) <= LINE_LIMIT:
             return inline
         ind = "  " * (_depth + 1)
-        lines = [f"{ind}{_serialize_key(k)}: {serialize(v, _depth + 1)}" for k, v in val.items()]
+        lines = [f"{ind}{_serialize_key(k)}:{serialize(v, _depth + 1)}" for k, v in val.items()]
         close_ind = "  " * _depth
         return "{\n" + "\n".join(lines) + f"\n{close_ind}}}"
 
@@ -197,11 +197,11 @@ def serialize(val: Any, _depth: int = 0) -> str:
 
 def _serialize_schema_array(arr: list, keys: list[str], depth: int) -> str:
     ind = "  " * (depth + 1)
-    header = "#[" + " ".join(_serialize_key(k) for k in keys) + "]"
+    header = "#[" + " ".join(_serialize_key(k) for k in keys) + " ]"
     rows = []
     for obj in arr:
         vals = [_serialize_primitive(obj[k]) for k in keys]
-        rows.append(f"{ind}" + " ".join(vals))
+        rows.append(f"{ind}" + " ".join(vals) + " ")
     return header + "\n" + "\n".join(rows)
 
 
@@ -219,7 +219,7 @@ def serialize_document(obj: dict) -> str:
                 continue
         inline = _try_inline(v)
         if inline is not None and (len(key) + 2 + len(inline)) <= LINE_LIMIT:
-            lines.append(f"{key}: {inline}")
+            lines.append(f"{key}:{inline}")
         else:
             block = serialize(v, 1)
             lines.append(f"{key}:\n  {block}")
@@ -243,6 +243,26 @@ class _Parser:
         self.depth = 0
 
     # ── helpers ────────────────────────────────────────────────────────────────
+
+    def _is_kv_start(self) -> bool:
+        """Return True if current position starts a key:value pair."""
+        saved = self.pos
+        try:
+            if self.cur() == '"':
+                self.parse_quoted_string()
+            elif _SAFE_START.match(self.cur()):
+                m = _SAFE_ID.match(self.src, self.pos)
+                if not m:
+                    return False
+                self.pos = m.end()
+            else:
+                return False
+            self.skip_hws()
+            return self.cur() == ':'
+        except Exception:
+            return False
+        finally:
+            self.pos = saved
 
     def cur(self) -> str:
         return self.src[self.pos] if self.pos < len(self.src) else ""
@@ -487,9 +507,8 @@ class _Parser:
         fields: list[str] = []
         self.skip_hws()
         while not self.eof() and self.cur() != "]":
-            if fields:
-                self.expect(" ")
             fields.append(self.parse_key())
+            self.skip_hws()
         self.expect("]")
 
         if not fields:
@@ -500,6 +519,7 @@ class _Parser:
         while not self.eof():
             if self.cur() not in ("\n", "\r"):
                 break
+            line_start = self.pos  # save position before consuming newline+indent
             # peek ahead to check indentation
             pi = self.pos
             while pi < len(self.src) and self.src[pi] in ("\n", "\r"):
@@ -522,6 +542,11 @@ class _Parser:
                 while not self.eof() and self.cur() != "\n":
                     self.pos += 1
                 continue
+
+            # Stop if this line is a KV pair (key followed by ':') — not a data row
+            if self._is_kv_start():
+                self.pos = line_start  # restore to \n before this line
+                break
 
             row: dict = {}
             for i, field in enumerate(fields):
